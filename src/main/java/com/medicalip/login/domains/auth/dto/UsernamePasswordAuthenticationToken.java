@@ -7,10 +7,17 @@ import org.springframework.security.core.GrantedAuthority;
 
 public abstract class UsernamePasswordAuthenticationToken extends AbstractAuthenticationToken{
 	
-    // 주로 사용자의 ID에 해당함
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	/**
+	 * 
+	 */
+	// 주로 사용자의 ID에 해당함
     private final Object principal;
     // 주로 사용자의 PW에 해당함
-    private Object credentials;
+    private final Object credentials;
     
     // 인증 완료 전의 객체 생성
     public UsernamePasswordAuthenticationToken(Object principal, Object credentials) {

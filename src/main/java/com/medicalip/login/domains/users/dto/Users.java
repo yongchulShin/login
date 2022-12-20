@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,6 +32,7 @@ import lombok.Setter;
 @Entity
 @Setter
 @Getter
+@DynamicUpdate
 @Table(name = "TB_INFO_USER")
 public class Users {
 	@Id //primaryKey 임을 알린다.

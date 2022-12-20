@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import com.medicalip.login.domains.users.dto.Users;
 
@@ -33,24 +34,35 @@ public class Token {
 	@Column(name = "REFRESH_TOKEN")
 	private String refreshToken;
 	
-	@Column(name = "EXPIRE_DT")
-	private Date expireDt;
+	@Column(name = "ACCESS_TOKEN_EXPIRE_DT")
+	private Date accessTokenExpireDt;
+	
+	@Column(name = "REFRESH_TOKEN_EXPIRE_DT")
+	private Date refreshTokenExpireDt;
 	
 	@ManyToOne
 	@JoinColumn(name = "USER_SEQ")
+	@NotNull
 	private Users users;
 	
 	@Builder
-	public Token(String accessToken, String refreshToken, Users users, Date expireDt) {
+	public Token(String accessToken, String refreshToken, Users users, Date accessTokenExpireDt, Date refreshTokenExpireDt) {
 		this.accessToken = accessToken;
 		this.refreshToken = refreshToken;
 		this.users = users;
-		this.expireDt = expireDt;
+		this.accessTokenExpireDt = accessTokenExpireDt;
+		this.refreshTokenExpireDt = refreshTokenExpireDt;
 	}
 	public void refreshUpdate(String refreshToken) {
 		this.refreshToken = refreshToken;
 	}
 	public void accessUpdate(String accessToken) {
 		this.accessToken = accessToken;
+	}
+	public void accessExpireUpdate(Date accessTokenExpireDt) {
+		this.accessTokenExpireDt = accessTokenExpireDt;
+	}
+	public void refreshExpireUpdate(Date refreshTokenExpireDt) {
+		this.refreshTokenExpireDt = refreshTokenExpireDt;
 	}
 }

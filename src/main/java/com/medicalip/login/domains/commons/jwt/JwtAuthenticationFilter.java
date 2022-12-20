@@ -29,16 +29,18 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     	System.out.println("[doFilter]");
     	
     	//1. Request Header 에서 JWT 토큰 추출
-    	String accessToken = ((HttpServletRequest) request).getHeader("ACCESS_TOKEN");
-		System.out.println("[AccessToken] :: " + accessToken);
+    	String token = tokenUtils.resolveToken((HttpServletRequest) request);
+//    	String accessToken = ((HttpServletRequest) request).getHeader("ACCESS_TOKEN");
+		System.out.println("[token] :: " + token);
 		
 		// 2. validateToken 으로 토큰 유효성 검사
-        boolean isAccessTokenValid = accessToken != null && tokenUtils.isValidToken(accessToken);
+//        boolean isAccessTokenValid = accessToken != null && tokenUtils.isValidToken(accessToken);
+        boolean isAccessTokenValid = token != null && tokenUtils.isValidToken(token);
         // resolveToken : Request의 Header에서 token 파싱
         if (isAccessTokenValid) {
         	System.out.println("AccessToken Valid True !! ");
             // validateToken : Jwt 토큰의 유효성 + 만료일자 확인
-            Authentication auth = tokenUtils.getAuthentication(accessToken);
+            Authentication auth = tokenUtils.getAuthentication(token);
             // getAuthentication : Jwt 토큰으로 인증 정보 조회
             SecurityContextHolder.getContext().setAuthentication(auth);
         }

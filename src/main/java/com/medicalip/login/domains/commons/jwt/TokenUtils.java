@@ -208,6 +208,7 @@ public class TokenUtils {
 		long now = (new Date()).getTime();
 		// Access Token 생성
 		Date accessTokenExpiresIn = createExpireDate(Constants.ACCESS_TOKEN_VALID_TIME);
+		Date refreshTokenExpiresIn = createExpireDate(Constants.REFRESH_TOKEN_VALID_TIME);
 		String accessToken = Jwts.builder()
 				.setSubject(authentication.getName())
 				.claim(Constants.AUTHORITIES_KEY, authorities)
@@ -217,15 +218,27 @@ public class TokenUtils {
 
 		// Refresh Token 생성
 		String refreshToken = Jwts.builder()
-				.setExpiration(new Date(now + Constants.REFRESH_TOKEN_VALID_TIME))
+				.setExpiration(refreshTokenExpiresIn)
 				.signWith(SignatureAlgorithm.HS512, createSigningKey(Constants.REFRESH_KEY))
 				.compact();
 
 		return Token.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)
-				.expireDt(new Date(now + Constants.REFRESH_TOKEN_VALID_TIME))
+				.accessTokenExpireDt(accessTokenExpiresIn)
+				.refreshTokenExpireDt(refreshTokenExpiresIn)
 				.build();
+	}
+	
+	public String createRefreshToken () {
+		long now = (new Date()).getTime();
+		// Refresh Token 생성
+		String refreshToken = Jwts.builder()
+				.setExpiration(new Date(now + Constants.REFRESH_TOKEN_VALID_TIME))
+				.signWith(SignatureAlgorithm.HS512, createSigningKey(Constants.REFRESH_KEY))
+				.compact();
+		
+		return refreshToken;
 	}
 	
 	private Claims parseClaims(String accessToken) {

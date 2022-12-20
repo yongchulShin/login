@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.medicalip</groupId>
-	<artifactId>cafe-api</artifactId>
+	<artifactId>login-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>cafe-api</name>
-	<description>Medicalip cafe-api project for Spring Boot</description>
+	<name>login-api</name>
+	<description>Medicalip login-api project for Spring Boot</description>
 	<properties>
 		<java.version>1.8</java.version>
 		<swagger.version>3.0.0</swagger.version>

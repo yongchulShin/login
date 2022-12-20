@@ -17,7 +17,7 @@ public final class Constants {
     public static final String AUTHORITIES_KEY = "auth";
 	
 //    public static final long ACCESS_TOKEN_VALID_TIME = 1000 * 60 * 60; //1시간
-    public static final long ACCESS_TOKEN_VALID_TIME = 1000L * 60 * 60; //1시간
-    public static final long REFRESH_TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 30; // 1달
+    public static final long REFRESH_TOKEN_VALID_TIME = 1000L * 60 * 60; //1시간
+    public static final long ACCESS_TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 30; // 1달
     
 }
