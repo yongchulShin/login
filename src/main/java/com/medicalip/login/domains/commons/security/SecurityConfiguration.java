@@ -18,6 +18,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.medicalip.login.domains.auth.repo.TokenRepository;
 import com.medicalip.login.domains.commons.jwt.JwtAuthenticationFilter;
 import com.medicalip.login.domains.commons.jwt.TokenUtils;
 import com.medicalip.login.domains.users.service.CustomUserDetailsService;
@@ -30,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 
 	private final TokenUtils tokenUtils;
+	private final TokenRepository tokenRepository;
 	private final CustomUserDetailsService customUserDetailsService;
 	
     @Bean
@@ -64,12 +66,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
                 // jwt token으로 생성하므로 세션은 필요 없으므로 생성 안함.
             .and()
 	            .authorizeRequests() // 다음 리퀘스트에 대한 사용권한 체크
-	                .mvcMatchers("/", "/test/**", "/user/**", 
+	                .mvcMatchers("/", "/test/**", "/user/**", "/redis/**",
 	                		"/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**",
 	                		"/swagger-ui.html", "/webjars/**", "/swagger/**","/swagger-ui/**","/filedown/**" ).permitAll()
 	                .anyRequest().authenticated()
           .and()
-          .addFilterBefore(new JwtAuthenticationFilter(tokenUtils),
+          .addFilterBefore(new JwtAuthenticationFilter(tokenUtils, tokenRepository),
                   UsernamePasswordAuthenticationFilter.class);
 	                // 그 외 나머지 요청은 모두 인증된 회원만 접근 가능
         		

@@ -1,9 +1,9 @@
 package com.medicalip.login.domains.auth.service;
 
-import com.medicalip.login.domains.commons.response.SingleResult;
+import org.springframework.http.ResponseEntity;
 
 public interface TokenService {
 
-	SingleResult generateJwtToken(String email);
+	ResponseEntity<?> generateJwtToken(String email);
 
 }

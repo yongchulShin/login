@@ -104,27 +104,28 @@ public class TokenUtils {
     
     // Request의 Header에서 token 값을 가져옵니다. "ACCESS_TOKEN" : "TOKEN값'
     public String resolveToken(HttpServletRequest request) {
-        return request.getHeader("ACCESS_TOKEN");
+        return request.getHeader("Authorization");
     }
 	
-	public boolean isValidToken(String token) {
+	public String isValidToken(String token) {
 		// TODO Auto-generated method stub
-		System.out.println("isValidToken is : " +token);
+		token = token.replace("Bearer ", "");
 		try {
 		  Claims accessClaims = getClaimsFormToken(token);
 		  System.out.println("accessClaims is : " + accessClaims);
 		  System.out.println("Access expireTime: " + accessClaims.getExpiration());
 		  System.out.println("Access email: " + accessClaims.get("sub"));
-		  return !accessClaims.getExpiration().before(new Date());
+//		  return !accessClaims.getExpiration().before(new Date());
+		  return "success";
 		} catch (ExpiredJwtException exception) {
 		  System.out.println("Token Expired UserID : " + exception.getClaims().getSubject());
-		  return false;
+		  return "expired";
 		} catch (JwtException exception) {
 		  System.out.println("Token Tampered");
-		  return false;
+		  return "tampered";
 		} catch (NullPointerException exception) {
 		  System.out.println("Token is null");
-		  return false;
+		  return "null";
 		}
 	}
 
@@ -225,7 +226,6 @@ public class TokenUtils {
 		return Token.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)
-				.accessTokenExpireDt(accessTokenExpiresIn)
 				.refreshTokenExpireDt(refreshTokenExpiresIn)
 				.build();
 	}
@@ -252,7 +252,6 @@ public class TokenUtils {
 
     public Long getExpiration(String accessToken) {
         // accessToken 남은 유효시간
-		
         Date expiration = Jwts.parser().setSigningKey(Constants.SECRET_KEY).parseClaimsJws(accessToken).getBody().getExpiration();
         // 현재 시간
         Long now = new Date().getTime();
