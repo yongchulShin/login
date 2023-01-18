@@ -39,8 +39,8 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     	//1. Request Header 에서 JWT 토큰 추출
     	String accessToken = tokenUtils.resolveToken((HttpServletRequest) request);
 		System.out.println("[accessToken] :: " + accessToken);
-		
 		if(accessToken != null) {
+			accessToken = accessToken.replace("Bearer ", "");
 //			filterChain.doFilter(request, response);
 //			return;
 			// 2. validateToken 으로 토큰 유효성 검사
@@ -54,9 +54,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 				// getAuthentication : Jwt 토큰으로 인증 정보 조회
 				SecurityContextHolder.getContext().setAuthentication(auth);
 			}else if(isAccessTokenValid.equals("expired")) {
-				System.out.println("request.getCookies() :: " + request1.getCookies());
 				if(!(request1.getCookies() == null)) {
-					System.out.println("!(request.getCookies() == null)");
 					String refreshToken = "";
 					Cookie[] cookie =  request1.getCookies();
 					
@@ -65,7 +63,8 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 					}
 					
 					System.out.println("refreshToken :: " + refreshToken);
-					Optional<Token> token = tokenRepository.findByRefreshToken(refreshToken);
+					System.out.println("refreshToken isValid :: " + tokenUtils.isValidRefreshToken(refreshToken));
+					Optional<Token> token = tokenRepository.findByRefreshToken(refreshToken); //Refresh Token 
 					System.out.println("token.stream().count() :: " + token.stream().count());
 					if(token.stream().count() > 0) {
 						//refreshToken 있으므로 accessToken 재발행

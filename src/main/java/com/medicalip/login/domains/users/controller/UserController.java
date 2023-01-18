@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/user")
-@Tag(name = "1. Users", description = "회원관리 api")
+@Tag(name = "1. Users", description = "Users Controller")
 public class UserController {
 	
 	private final UserService userService; // user Service
@@ -53,28 +53,35 @@ public class UserController {
 		
 		TokenResponse jwtToken;
 		System.out.println("request.getCookies() :: " + request.getCookies());
-		if(!(request.getCookies() == null)) {
-			String refreshToken = Arrays.stream(request.getCookies())
-					.filter(c -> c.getName().equals("refreshToken"))
-					.map(Cookie::getValue).toString();
-			System.out.println("!(request.getCookies() == null)");
-			//refreshToken 있으므로 accessToken 재발행
-			jwtToken = userService.signInByRefreshToken(loginRequest, refreshToken);
-		}else {
-			jwtToken = userService.signIn(loginRequest);
+		if(request.getCookies() != null) {
+			String refreshToken = "";
+			Cookie[] cookie =  request.getCookies();
 			
-			//쿠키생성
-			Cookie refreshCookie = new Cookie("refreshToken", jwtToken.getRefreshToken());
-			refreshCookie.setMaxAge(365 * 24 * 60 * 60); //만료기간 1년
-			refreshCookie.setSecure(true);
-			refreshCookie.setHttpOnly(true);
-			refreshCookie.setPath("/");
+			for(int i = 0; i < cookie.length ; i++) {
+				if(cookie[i].getName().equals("refreshToken"))
+					refreshToken = cookie[i].getValue();
+			}
 			
-			response.addCookie(refreshCookie);
+			System.out.println("refreshToken :: " + refreshToken);
+			if(refreshToken != null) {
+				//refreshToken 있으므로 accessToken 재발행
+				jwtToken = userService.signInByRefreshToken(loginRequest, refreshToken);
+				return ResponseEntity.ok().body(jwtToken);
+			}
 		}
+		
+		jwtToken = userService.signIn(loginRequest);
+		
+		//쿠키생성
+		Cookie refreshCookie = new Cookie("refreshToken", jwtToken.getRefreshToken());
+		refreshCookie.setMaxAge(365 * 24 * 60 * 60); //만료기간 1년
+		refreshCookie.setSecure(true);
+		refreshCookie.setHttpOnly(true);
+		refreshCookie.setPath("/");
+		
+		response.addCookie(refreshCookie);
 		return ResponseEntity.ok().body(jwtToken);
 		
-//		return ResponseEntity.ok().body(userService.signIn(loginRequest));
 	}
 	
 	@GetMapping("/info")

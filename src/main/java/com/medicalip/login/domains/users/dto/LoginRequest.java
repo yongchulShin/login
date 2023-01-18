@@ -7,6 +7,7 @@ import javax.validation.constraints.Pattern;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.medicalip.login.domains.commons.util.EncryptUtil;
 
 import lombok.Getter;
@@ -24,6 +25,7 @@ public class LoginRequest {
         private String userPw;
         
         private String serviceId;
+        @JsonIgnore
         private String ip;
         
         public UsernamePasswordAuthenticationToken toAuthentication() {

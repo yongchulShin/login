@@ -15,6 +15,8 @@ public class RedisTokenDTO {
 	@Id
 	private long userSeq;
 	private String refreshToken;
-	private LocalDateTime expireTime;
-	
+	private String accessToken;
+	private LocalDateTime refreshExpireTime;
+	private LocalDateTime accessExpireTime;
+
 }

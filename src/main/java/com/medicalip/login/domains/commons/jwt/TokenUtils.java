@@ -48,7 +48,8 @@ public class TokenUtils {
 	    return Jwts.builder()
 	        .setSubject(users.getUserEmail())
 	        .setHeader(createHeader())
-	        .setClaims(createClaims(users))
+//	        .setClaims(createClaims(users))
+	        .setClaims(claims)
 	        .setExpiration(createExpireDate(Constants.ACCESS_TOKEN_VALID_TIME))
 	        .signWith(SignatureAlgorithm.HS512, createSigningKey(Constants.SECRET_KEY))
 	        .compact();
@@ -56,7 +57,7 @@ public class TokenUtils {
 	
     // JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
     public Authentication getAuthentication(String accessToken) {
-    	System.out.println("accessToken :: " + accessToken);
+    	System.out.println("getAuthentication accessToken :: " + accessToken);
         // 토큰 복호화
         Claims claims = parseClaims(accessToken);
 
@@ -110,6 +111,7 @@ public class TokenUtils {
 	public String isValidToken(String token) {
 		// TODO Auto-generated method stub
 		token = token.replace("Bearer ", "");
+		System.out.println("token :: " + token);
 		try {
 		  Claims accessClaims = getClaimsFormToken(token);
 		  System.out.println("accessClaims is : " + accessClaims);
@@ -132,8 +134,9 @@ public class TokenUtils {
 	public boolean isValidRefreshToken(String token) {
 	    try {
 	      Claims accessClaims = getClaimsToken(token);
-	      System.out.println("Access expireTime: " + accessClaims.getExpiration());
-	      System.out.println("Access email: " + accessClaims.get("email"));
+	      System.out.println("accessClaims is : " + accessClaims);
+	      System.out.println("refresh expireTime: " + accessClaims.getExpiration());
+	      System.out.println("refresh email: " + accessClaims.get("sub"));
 	      return true;
 	    } catch (ExpiredJwtException exception) {
 	      System.out.println("Token Expired UserID : " + exception.getClaims().getSubject());
@@ -148,7 +151,7 @@ public class TokenUtils {
 	  }
 	
 	
-	private Claims getClaimsToken(String token) {
+	public Claims getClaimsToken(String token) {
 		// TODO Auto-generated method stub
 		return Jwts.parser()
 		.setSigningKey(DatatypeConverter.parseBase64Binary(Constants.REFRESH_KEY))
@@ -174,6 +177,7 @@ public class TokenUtils {
 		// TODO Auto-generated method stub
 		Map<String, Object> claims = new HashMap<>();
 	    claims.put(Constants.DATA_KEY, users.getUserEmail());
+	    claims.put(Constants.AUTHORITIES_KEY, users.getRoles().getRoleName());
 	    return claims;
 	}
 
@@ -219,6 +223,7 @@ public class TokenUtils {
 
 		// Refresh Token 생성
 		String refreshToken = Jwts.builder()
+				.setSubject(authentication.getName())
 				.setExpiration(refreshTokenExpiresIn)
 				.signWith(SignatureAlgorithm.HS512, createSigningKey(Constants.REFRESH_KEY))
 				.compact();

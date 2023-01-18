@@ -34,6 +34,7 @@ import com.medicalip.login.domains.users.dto.Users;
 import com.medicalip.login.domains.users.repo.UserRoleRepository;
 import com.medicalip.login.domains.users.repo.UsersRepository;
 
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -99,13 +100,22 @@ public class UserServiceimpl implements UserService{
         	// 3. 인증 정보를 기반으로 JWT 토큰 생성
         	Token tokenInfo = tokenUtils.generateToken(authentication);
         	Optional<Token> updateOp = tokenRepository.findByUsers(users);
-        	
+
         	// 4. RefreshToken 저장 (expirationTime 설정을 통해 자동 삭제 처리)
         	if(updateOp.stream().count() != 0) { 
         		System.out.println("Token Update");
         		Token updateToken = updateOp.get();
         		updateToken.setAccessToken(tokenInfo.getAccessToken());
         		updateToken.setRefreshTokenExpireDt(tokenUtils.createExpireDate(Constants.REFRESH_TOKEN_VALID_TIME));
+
+				RedisTokenDTO rtd = new RedisTokenDTO();
+				rtd.setUserSeq(users.getUserSeq());
+				rtd.setRefreshToken(updateToken.getRefreshToken());
+
+				//redis 등록
+				redisService.setRedisRefreshToken(rtd);
+				redisService.setRedisAccessToken(rtd);
+
         		tokenRepository.save(updateToken);
         	}else {
         		System.out.println("최초 Login");
@@ -114,7 +124,8 @@ public class UserServiceimpl implements UserService{
         		rtd.setRefreshToken(tokenInfo.getRefreshToken());
         		
         		//redis 등록
-        		redisService.setRedis(rtd);
+				redisService.setRedisRefreshToken(rtd);
+				redisService.setRedisAccessToken(rtd);
         		
         		//db 등록
         		tokenRepository.save( // 신규(최초)
@@ -163,39 +174,58 @@ public class UserServiceimpl implements UserService{
 	public TokenResponse signInByRefreshToken(Login loginRequest, String refreshToken) {
 		// TODO Auto-generated method stub
 		System.out.println("[refreshToken] :: " + refreshToken);
-		try {
-			Users users = usersRepository.findByUserEmail(loginRequest.getUserEmail()).get();
-			String accessToken = tokenUtils.generateJwtToken(users);
-			
-			Token updateToken = tokenRepository.findByUsers(users).get();
-			updateToken.setAccessToken(accessToken);
-			updateToken.setUsers(users);
-			tokenRepository.save(updateToken);
-			
-			return TokenResponse.builder()
-        			.status(HttpStatus.OK)
-        			.message("로그인에 성공했습니다.")
-        			.accessToken(updateToken.getAccessToken())
-        			.refreshToken(updateToken.getRefreshToken())
-        			.rolesList(users.getRoles())
-        			.build();
-        }catch (BadCredentialsException e) {
-			// TODO: handle exception
-        	return TokenResponse.builder()
-        			.status(HttpStatus.FORBIDDEN)
-    				.message("비밀번호가 일치하지 않습니다.")
+		if(tokenUtils.isValidRefreshToken(refreshToken)) {
+			Claims reClaims = tokenUtils.getClaimsToken(refreshToken);
+			System.out.println("reClaims :: " + reClaims);
+			if(reClaims.get("sub").equals(loginRequest.getUserEmail())) {
+				try {
+					Users users = usersRepository.findByUserEmail(loginRequest.getUserEmail()).get();
+					String accessToken = tokenUtils.generateJwtToken(users);
+					
+					Token updateToken = tokenRepository.findByUsers(users).get();
+					updateToken.setAccessToken(accessToken);
+					updateToken.setUsers(users);
+					tokenRepository.save(updateToken);
+
+					RedisTokenDTO rtd = new RedisTokenDTO();
+					rtd.setUserSeq(users.getUserSeq());
+					rtd.setRefreshToken(updateToken.getRefreshToken());
+					rtd.setAccessToken(updateToken.getAccessToken());
+
+					//redis 등록
+					redisService.setRedisRefreshToken(rtd);
+					redisService.setRedisAccessToken(rtd);
+
+					return TokenResponse.builder()
+							.status(HttpStatus.OK)
+							.message("로그인에 성공했습니다.")
+							.accessToken(updateToken.getAccessToken())
+							.refreshToken(updateToken.getRefreshToken())
+							.rolesList(users.getRoles())
+							.build();
+				}catch (BadCredentialsException e) {
+					// TODO: handle exception
+					return TokenResponse.builder()
+							.status(HttpStatus.FORBIDDEN)
+							.message("비밀번호가 일치하지 않습니다.")
 //            			.accessToken(tokenInfo.getAccessToken())
 //            			.refreshToken(tokenInfo.getRefreshToken())
-        			.build();
-		}catch (NoSuchElementException e) {
-			// TODO: handle exception
-        	return TokenResponse.builder()
-        			.status(HttpStatus.BAD_REQUEST)
-    				.message("존재하지 않는 회원입니다.")
+							.build();
+				}catch (NoSuchElementException e) {
+					// TODO: handle exception
+					return TokenResponse.builder()
+							.status(HttpStatus.BAD_REQUEST)
+							.message("존재하지 않는 회원입니다.")
 //            			.accessToken(tokenInfo.getAccessToken())
 //            			.refreshToken(tokenInfo.getRefreshToken())
-        			.build();
+							.build();
+				}
+			}
 		}
+		return TokenResponse.builder()
+				.status(HttpStatus.ACCEPTED)
+				.message("유효한 토큰이 아닙니다.")
+				.build();
 	}
 	
 }
