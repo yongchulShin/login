@@ -32,7 +32,8 @@ import lombok.Setter;
 @Builder
 @Entity
 @Setter
-@Getter@DynamicUpdate
+@Getter
+@DynamicUpdate
 @Table(name = "TB_INFO_USER")
 public class Users {
 	@Id //primaryKey 임을 알린다.

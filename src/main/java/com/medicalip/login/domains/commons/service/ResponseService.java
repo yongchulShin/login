@@ -2,6 +2,7 @@ package com.medicalip.login.domains.commons.service;
 
 import java.util.List;
 
+import com.medicalip.login.domains.commons.response.Response;
 import org.springframework.stereotype.Service;
 
 import com.medicalip.login.domains.commons.response.CommonResult;
