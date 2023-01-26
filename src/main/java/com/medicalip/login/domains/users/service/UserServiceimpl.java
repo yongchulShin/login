@@ -83,6 +83,7 @@ public class UserServiceimpl implements UserService{
 	
 	public TokenResponse signIn(LoginRequest.Login login) {
         try {
+			System.out.println("[service sign in]");
         	Users users = usersRepository.findByUserEmail(login.getUserEmail()).get();
         	System.out.println("users :: " + users.getUserEmail());
         	System.out.println("users :: " + users.getRoles());
@@ -105,17 +106,19 @@ public class UserServiceimpl implements UserService{
         	if(updateOp.stream().count() != 0) { 
         		System.out.println("Token Update");
         		Token updateToken = updateOp.get();
+        		updateToken.setRefreshToken(tokenInfo.getRefreshToken());
         		updateToken.setAccessToken(tokenInfo.getAccessToken());
         		updateToken.setRefreshTokenExpireDt(tokenUtils.createExpireDate(Constants.REFRESH_TOKEN_VALID_TIME));
 
 				RedisTokenDTO rtd = new RedisTokenDTO();
 				rtd.setUserSeq(users.getUserSeq());
 				rtd.setRefreshToken(updateToken.getRefreshToken());
+				rtd.setAccessToken(updateToken.getAccessToken());
 
 				//redis 등록
+				System.out.println("updateToken :: " + updateToken);
 				redisService.setRedisRefreshToken(rtd);
 				redisService.setRedisAccessToken(rtd);
-
         		tokenRepository.save(updateToken);
         	}else {
         		System.out.println("최초 Login");

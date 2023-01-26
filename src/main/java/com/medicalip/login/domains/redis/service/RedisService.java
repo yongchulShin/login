@@ -10,7 +10,7 @@ public interface RedisService {
 
 	void setRedisAccessToken(RedisTokenDTO redisTokenDTO);
 
-	void delRedisAccessToken(String accessKey);
+	void delRedisToken(String redisKey);
 
 	Set<String> getAccessList();
 

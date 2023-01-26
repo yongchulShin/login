@@ -5,6 +5,8 @@ import com.medicalip.login.domains.redis.dto.RedisRequest;
 import com.medicalip.login.domains.redis.dto.RedisTokenDTO;
 import com.medicalip.login.domains.users.dto.Users;
 import com.medicalip.login.domains.users.service.UserService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.*;
 import org.springframework.web.bind.annotation.*;
@@ -55,13 +57,18 @@ public class RedisController {
 
 	@PostMapping("/setRedisRefreshToken")
 	@Operation(summary = "Redis RefreshToken 등록", description = "Redis Data 등록(RefreshToken)")
-	public CommonResult setRedisRefreshToken(@RequestBody RedisRequest req) {
+	public CommonResult setRedisRefreshToken(@Parameter(name = "RedisRequest", schema = @Schema(required = true,example =
+			"{\"userEmail\":\"\",\n"
+			+"\"refreshToken\":\"\"\n"
+			+"}"))
+			@RequestBody RedisRequest req) {
 		//입력받은 Email로 Users 객체 생성
 		Users user = userService.findByEmail(req.getUserEmail()).get();
 
 		//Parameter(RedisTokenDTO) 객체 생성 및 값 Set
 		RedisTokenDTO rtd = new RedisTokenDTO();
 		rtd.setUserSeq(user.getUserSeq());
+		rtd.setRefreshToken(req.getRefreshToken());
 
 		//Set Redis Refresh Token
 		redisService.setRedisRefreshToken(rtd);
@@ -69,13 +76,18 @@ public class RedisController {
 	}
 	@PostMapping("/setRedisAccessToken")
 	@Operation(summary = "Redis AccessToken 등록", description = "Redis Data 등록(AccessToken)")
-	public CommonResult setRedisAccessToken(@RequestBody RedisRequest req) {
+	public CommonResult setRedisAccessToken(@Parameter(name = "RedisRequest", schema = @Schema(required = true,example =
+			"{\"userEmail\":\"\",\n"
+			+"\"accessToken\":\"\"\n"
+			+"}"))
+			@RequestBody RedisRequest req) {
 		//입력받은 Email로 Users 객체 생성
 		Users user = userService.findByEmail(req.getUserEmail()).get();
 
 		//Parameter(RedisTokenDTO) 객체 생성 및 값 Set
 		RedisTokenDTO rtd = new RedisTokenDTO();
 		rtd.setUserSeq(user.getUserSeq());
+		rtd.setAccessToken(req.getAccessToken());
 
 		//Set Redis AccessToken
 		redisService.setRedisAccessToken(rtd);
@@ -83,21 +95,27 @@ public class RedisController {
 	}
 	@DeleteMapping("/delRefreshToken")
 	@Operation(summary = "Redis Data 삭제(RefreshToken)", description = "Redis Data 삭제(RefreshToken)")
-	public CommonResult delRefreshToken(@RequestBody RedisRequest req) {
+	public CommonResult delRefreshToken(@Parameter(name = "RedisRequest", schema = @Schema(required = true,example =
+			"{\"userEmail\":\"\"\n"
+			+"}"))
+			@RequestBody RedisRequest req) {
 		Optional<Users> user = userService.findByEmail(req.getUserEmail());
 		if(user.isPresent()){
 			String refreshKey = Constants.REDIS_REFRESH_TOKEN_KEY+"-"+user.get().getUserSeq();
-			redisService.delRedisAccessToken(refreshKey);
+			redisService.delRedisToken(refreshKey);
 		}
 		return responseSerivce.getSuccessResult();
 	}
 	@DeleteMapping("/delAccessToken")
 	@Operation(summary = "Redis DAta 삭제(AccessToken)", description = "Redis Data 삭제(AccessToken)")
-	public CommonResult delRedis(@RequestBody RedisRequest req) {
+	public CommonResult delRedis(@Parameter(name = "RedisRequest", schema = @Schema(required = true,example =
+			"{\"userEmail\":\"\"\n"
+			+"}"))
+			@RequestBody RedisRequest req) {
 		Optional<Users> user = userService.findByEmail(req.getUserEmail());
 		if(user.isPresent()){
 			String accessKey = Constants.REDIS_ACCESS_TOKEN_KEY+"-"+user.get().getUserSeq();
-			redisService.delRedisAccessToken(accessKey);
+			redisService.delRedisToken(accessKey);
 		}
 		return responseSerivce.getSuccessResult();
 	}

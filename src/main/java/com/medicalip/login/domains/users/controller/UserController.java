@@ -7,6 +7,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,7 +50,11 @@ public class UserController {
 	
 	@PostMapping("/signin")
 	@Operation(summary = "로그인", description = "로그인을 한다.")
-	public ResponseEntity<?> signIn(@RequestBody LoginRequest.Login loginRequest, HttpServletRequest request,  HttpServletResponse response) {
+	public ResponseEntity<?> signIn(@Parameter(name = "LoginRequest", schema = @Schema(required = true,example =
+			"{\"userEmail\":\"\",\n"
+			+"\"userPw\":\"\"\n"
+			+"}"))
+			@RequestBody LoginRequest.Login loginRequest, HttpServletRequest request,  HttpServletResponse response) {
 		loginRequest.setIp(request.getRemoteAddr());
 		
 		TokenResponse jwtToken;
@@ -58,8 +64,11 @@ public class UserController {
 			Cookie[] cookie =  request.getCookies();
 			
 			for(int i = 0; i < cookie.length ; i++) {
-				if(cookie[i].getName().equals("refreshToken"))
+				System.out.println("Cookie");
+				if(cookie[i].getName().equals("refreshToken")){
+					System.out.println("refreshToken not null");
 					refreshToken = cookie[i].getValue();
+				}
 			}
 			
 			System.out.println("refreshToken :: " + refreshToken);

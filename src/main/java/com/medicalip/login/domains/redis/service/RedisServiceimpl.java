@@ -39,8 +39,8 @@ public class RedisServiceimpl implements RedisService{
     }
 
     @Override
-    public void delRedisAccessToken(String accessKey) {
-
+    public void delRedisToken(String redisKey) {
+        redisTemplate.delete(redisKey);
     }
 
     @Override
