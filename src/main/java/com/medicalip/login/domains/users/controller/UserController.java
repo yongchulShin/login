@@ -34,7 +34,12 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 	
 	private final UserService userService; // user Service
-	
+
+	@GetMapping("/welcome")
+	public String welcome() {
+		return "login-service 호출!";
+	}
+
 	@PostMapping("/signup")
 	@Operation(summary = "회원가입", description = "회원가입을 한다.")
 	public CommonResult signUp(
@@ -72,7 +77,7 @@ public class UserController {
 			}
 			
 			System.out.println("refreshToken :: " + refreshToken);
-			if(refreshToken != null) {
+			if(refreshToken != null && !refreshToken.equals("")) {
 				//refreshToken 있으므로 accessToken 재발행
 				jwtToken = userService.signInByRefreshToken(loginRequest, refreshToken);
 				return ResponseEntity.ok().body(jwtToken);

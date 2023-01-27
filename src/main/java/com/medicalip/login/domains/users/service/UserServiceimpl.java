@@ -125,7 +125,8 @@ public class UserServiceimpl implements UserService{
         		RedisTokenDTO rtd = new RedisTokenDTO();
         		rtd.setUserSeq(users.getUserSeq());
         		rtd.setRefreshToken(tokenInfo.getRefreshToken());
-        		
+        		rtd.setAccessToken(tokenInfo.getAccessToken());
+
         		//redis 등록
 				redisService.setRedisRefreshToken(rtd);
 				redisService.setRedisAccessToken(rtd);
