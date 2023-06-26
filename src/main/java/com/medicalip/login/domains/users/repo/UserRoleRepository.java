@@ -4,10 +4,10 @@ import java.util.Collection;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.medicalip.login.domains.users.dto.UserRole;
+import com.medicalip.login.domains.users.entity.UserRole;
 
 public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
 
-	Collection<UserRole> findByRoleName(String role);
+	UserRole findByRoleName(String role);
 
 }

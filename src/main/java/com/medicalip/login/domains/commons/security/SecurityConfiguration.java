@@ -68,13 +68,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 	            .authorizeRequests() // 다음 리퀘스트에 대한 사용권한 체크
 	                .mvcMatchers("/", "/test/**", "/user/**", "/redis/**",
 	                		"/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**",
-	                		"/swagger-ui.html", "/webjars/**", "/swagger/**","/swagger-ui/**","/filedown/**" ).permitAll()
+	                		"/swagger-ui.html", "/webjars/**", "/swagger/**","/swagger-ui/**","/filedown/**","/auth/**","/mail/**" ).permitAll()
 	                .anyRequest().authenticated()
           .and()
           .addFilterBefore(new JwtAuthenticationFilter(tokenUtils, tokenRepository),
-                  UsernamePasswordAuthenticationFilter.class);
-	                // 그 외 나머지 요청은 모두 인증된 회원만 접근 가능
-        		
+                  UsernamePasswordAuthenticationFilter.class)
+        // 그 외 나머지 요청은 모두 인증된 회원만 접근 가능
+        ;
+
     }
 
 	@Bean
@@ -88,9 +89,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
     	System.out.println("[CorsConfigurationSource]");
         CorsConfiguration configuration = new CorsConfiguration();
 
-//        configuration.addAllowedOrigin("*");
-//        configuration.addAllowedOrigin("http://localhost:3000");
-        configuration.addAllowedOriginPattern("*");
+        configuration.addAllowedOrigin("http://localhost:3000");
+//        configuration.addAllowedOriginPattern("*");
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);

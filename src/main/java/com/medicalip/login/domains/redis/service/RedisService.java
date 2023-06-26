@@ -1,18 +1,9 @@
 package com.medicalip.login.domains.redis.service;
 
-import com.medicalip.login.domains.redis.dto.RedisRequest;
-import com.medicalip.login.domains.redis.dto.RedisTokenDTO;
-
-import java.util.Set;
+import com.medicalip.login.domains.commons.response.TokenResponse;
+import com.medicalip.login.domains.match.entity.MatchUserRole;
 
 public interface RedisService {
-	void setRedisRefreshToken(RedisTokenDTO redisTokenDTO);
-
-	void setRedisAccessToken(RedisTokenDTO redisTokenDTO);
-
-	void delRedisToken(String redisKey);
-
-	Set<String> getAccessList();
-
-	Set<String> getRefreshList();
+    void setRedis(TokenResponse jwtToken);
+    MatchUserRole getRedis(Long userSeq);
 }

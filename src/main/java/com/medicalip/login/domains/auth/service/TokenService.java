@@ -1,9 +1,10 @@
 package com.medicalip.login.domains.auth.service;
 
-import org.springframework.http.ResponseEntity;
+import com.medicalip.login.domains.commons.response.TokenResponse;
 
 public interface TokenService {
 
-	ResponseEntity<?> generateJwtToken(String email);
+	TokenResponse generateJwtToken(String expiredAccessToken, String refreshToken);
+	String getRefreshToken(String email);
 
 }

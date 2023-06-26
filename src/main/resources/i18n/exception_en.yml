@@ -1,0 +1,52 @@
+# exception_en.yml
+unKnown:
+  code: "-9999"
+  msg: "An unknown error has occurred."
+commonError:
+  code: "-9000"
+  msg: "An unknown error has occurred."
+requestParameterError:
+  code: "-802"
+  msg: "Request Parameter Mapping Error"
+userNotFound:
+  code: "-1000"
+  msg: "This member not exist"
+incorrectPW:
+  code: "-1001"
+  msg: "Password incorrect"    
+unauthorizedEmail:
+  code: "-1002"
+  msg: "Unauthorized Email"
+withdrewUser:
+  code: "-1003"
+  msg : "withdrew user "
+invalidInputValue:
+  code: "-2000"
+  msg: "Invalid Input Value"
+invalidInputType:
+  code: "-2001"
+  msg: "Invalid Input Type. binding error"
+methodNotAllowed:
+  code: "-2002"
+  msg: "Method Not Allowed"
+accessDenied:
+  code: "-2003"
+  msg: "Access Denied"
+ExistingUserError:
+  code: "-2004"
+  msg: "Your account already exists."
+unauthorizedException:
+  code: "-2005"
+  msg: "Unauthorized access."
+duplicateValueInput:
+  code: "-2006"
+  msg: "Duplicate Input Value."
+userExistsError:
+  code: "-2007"
+  msg: "Already Exist User Found."
+httpMessageNotReadable:
+  code: "-803"
+  msg: "Cannot read http request."
+fileStorageError:
+  code: "-2008"
+  msg: "Error has occured on filestorage."

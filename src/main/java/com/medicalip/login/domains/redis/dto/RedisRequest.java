@@ -3,11 +3,8 @@ package com.medicalip.login.domains.redis.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 public class RedisRequest {
-    private String userEmail;
-    private String accessToken;
-    private String refreshToken;
+    private String email;
 }
-

@@ -1,11 +1,25 @@
-# 컨테이너를 구동시킬 자바를 받음
-FROM openjdk:11-jdk-alpine
+# Start with a base image containing Java runtime
+FROM openjdk:15-alpine
 
-# JAR_FILE 이라는 변수로 jar파일 지정
-ARG JAR_FILE=/volume1/docker/cafeapi/cafe-0.0.1-SNAPSHOT.jar
+# Add Author info
+#LABEL maintainer="ycshin@medicalip.com"
 
-# 지정한 jar 파일을 cafe-api.jar 라는 이름으로 Docker Container에 추가
-ADD ${JAR_FILE} cafe-api.jar
+# Add a volume to /tmp
+VOLUME /home/login/springboot
 
-# cafe-api 파일을 실행
-ENTRYPOINT [ "java", "-jar", "/cafe-api.jar" ]
+# Make port 8080 available to the world outside this container
+EXPOSE 9001
+
+# The application's jar file
+ARG JAR_FILE=target/*.jar
+
+# Add the application's jar to the container
+ADD ${JAR_FILE} /home/login/springboot/login.jar
+
+# Setting environment variables
+# Note: this application relies on environment variables that contain secrets. Can pass along to image via:
+# https://stackoverflow.com/questions/30494050/how-do-i-pass-environment-variables-to-docker-containers
+ENV JAVA_OPTS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9001
+# Run the jar file
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/home/login/springboot/login.jar"]
+

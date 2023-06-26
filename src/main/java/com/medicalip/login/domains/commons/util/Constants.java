@@ -21,5 +21,16 @@ public final class Constants {
 //    public static final long ACCESS_TOKEN_VALID_TIME = 1000 * 60 * 60; //1시간
     public static final long ACCESS_TOKEN_VALID_TIME = 1000L * 60 * 5; //1시간
     public static final long REFRESH_TOKEN_VALID_TIME = 1000L * 60 * 60 * 24 * 30; // 1달
-    
+    public static final String YES = "Y";
+    public static final String NO = "N";
+    public static final String ROLE_ADMIN = "ROLE_ADMIN";
+    public static final String ROLE_USER = "ROLE_USER";
+    public static final String ROLE_DEVELOPER = "ROLE_DEVELOPER";
+    public static final String ROLE_MARKETING = "ROLE_MARKETING";
+    public static final String ROLE_SALES = "ROLE_SALES";
+    public static final String ROLE_HR = "ROLE_HR";
+    public static final String ROLE_FINANCE = "ROLE_FINANCE";
+    public static final String ROLE_DTIC = "ROLE_DTIC";
+    public static final String ROLE_LICENSE = "ROLE_LICENSE";
+
 }

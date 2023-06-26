@@ -1,0 +1,52 @@
+# exception_ko.yml
+unKnown:
+  code: "-9999"
+  msg: "알수 없는 오류가 발생하였습니다."
+commonError:
+  code: "-9000"
+  msg: "알수 없는 오류가 발생하였습니다."
+requestParameterError:
+  code: "-802"
+  msg: "입력받은 데이터가 올바르지 않습니다."  
+userNotFound:
+  code: "-1000"
+  msg: "존재하지 않는 회원입니다."
+incorrectPW:
+  code: "-1001"
+  msg: "패스워드가 일치하지 않습니다."   
+unauthorizedEmail:
+  code: "-1002"
+  msg: "인증되지 않은 이메일입니다."
+withdrewUser:
+  code: "-1003"
+  msg : "탈퇴 처리 된 회원입니다."
+invalidInputValue:
+  code: "-2000"
+  msg: "잘못된 입력입니다."
+invalidInputType:  
+  code: "-2001"
+  msg: "잘못된 형식의 입력입니다."
+methodNotAllowed:
+  code: "-2002"
+  msg: "지원하지 않는 HTTP Method 입니다."
+accessDenied:
+  code: "-2003"
+  msg: "권한이 없습니다."
+ExistingUserError:
+   code: "-2004"
+   msg: "이미 존재하는 ID입니다"
+unauthorizedException:
+  code: "-2005"
+  msg: "허가받지 않은 접근입니다.인증되지 않았습니다."
+duplicateValueInput:
+  code: "-2006"
+  msg: "중복된 값입니다.입력을 재확인해주세요"
+userExistsError:
+  code: "-2007"
+  msg: "사용자가 존재합니다."
+httpMessageNotReadable:
+  code: "-803"
+  msg: "http요청을 서버가 읽을 수 없습니다."
+fileStorageError:
+  code: "-2008"
+  msg: "서버의 파일 저장소에 오류가 발생했습니다."

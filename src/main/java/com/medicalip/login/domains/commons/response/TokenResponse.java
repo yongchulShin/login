@@ -1,16 +1,12 @@
 package com.medicalip.login.domains.commons.response;
 
-import java.util.Collection;
-import java.util.List;
-
+import com.medicalip.login.domains.match.entity.MatchUserRole;
 import org.springframework.http.HttpStatus;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.medicalip.login.domains.users.dto.UserRole;
-
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,15 +15,19 @@ public class TokenResponse {
 	private String resultMessage;
 	private String accessToken;
 	private String refreshToken;
-	private UserRole roles;
+//    private List<String> roles = new ArrayList<>();
+	private List<MatchUserRole> matchUserRole;
 	
-	@Builder
-	public TokenResponse(HttpStatus status, String message, String accessToken, String refreshToken, UserRole rolesList) {
+	public TokenResponse(HttpStatus status, String message, String accessToken, String refreshToken, List<MatchUserRole> matchUserRole) {
 		this.resultCode = status.value();
 		this.resultMessage = message;
 		this.accessToken = accessToken;
 		this.refreshToken = refreshToken;
-		this.roles = rolesList;
+		this.matchUserRole = matchUserRole;
 	}
-	
+
+	public TokenResponse(HttpStatus status, String message) {
+		this.resultCode = status.value();
+		this.resultMessage = message;
+	}
 }

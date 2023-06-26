@@ -1,17 +1,12 @@
 package com.medicalip.login.domains.commons.jwt;
 
-import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.crypto.spec.SecretKeySpec;
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.bind.DatatypeConverter;
-
+import com.medicalip.login.domains.auth.entity.Token;
+import com.medicalip.login.domains.commons.util.Constants;
+import com.medicalip.login.domains.users.entity.Users;
+import com.medicalip.login.domains.users.repo.UsersRepository;
+import io.jsonwebtoken.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,16 +17,12 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import com.medicalip.login.domains.auth.dto.Token;
-import com.medicalip.login.domains.commons.util.Constants;
-import com.medicalip.login.domains.users.dto.Users;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.extern.slf4j.Slf4j;
+import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.http.HttpServletRequest;
+import javax.xml.bind.DatatypeConverter;
+import java.security.Key;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -40,15 +31,17 @@ public class TokenUtils {
 	
 	@Value("${spring.jwt.secret}") 
 	String secretKey;
-	
+	@Autowired
+	private UsersRepository usersRepository;
 	public String generateJwtToken(Users users) {
 		System.out.println("generateJwtToken");
-		Claims claims = Jwts.claims().setSubject(users.getUserEmail()); // JWT payload 에 저장되는 정보단위, 보통 여기서 user를 식별하는 값을 넣는다.
-        claims.put("roles", users.getRoles()); // 정보는 key / value 쌍으로 저장된다.
+//		Claims claims = Jwts.claims().setSubject(users.getUserEmail()); // JWT payload 에 저장되는 정보단위, 보통 여기서 user를 식별하는 값을 넣는다.
+		Claims claims = Jwts.claims().setSubject(String.valueOf(users.getUserSeq())); // JWT payload 에 저장되는 정보단위, 보통 여기서 user를 식별하는 값을 넣는다.
+        claims.put("roles", users.getMatchUserRoles()); // 정보는 key / value 쌍으로 저장된다.
 	    return Jwts.builder()
-	        .setSubject(users.getUserEmail())
+//	        .setSubject(users.getUserEmail())
+	        .setSubject(String.valueOf(users.getUserSeq()))
 	        .setHeader(createHeader())
-//	        .setClaims(createClaims(users))
 	        .setClaims(claims)
 	        .setExpiration(createExpireDate(Constants.ACCESS_TOKEN_VALID_TIME))
 	        .signWith(SignatureAlgorithm.HS512, createSigningKey(Constants.SECRET_KEY))
@@ -77,13 +70,15 @@ public class TokenUtils {
     }
 
 	public String saveRefreshToken(Users users) {
-		Claims claims = Jwts.claims().setSubject(users.getUserEmail()); // JWT payload 에 저장되는 정보단위, 보통 여기서 user를 식별하는 값을 넣는다.
-        claims.put("roles", users.getRoles()); // 정보는 key / value 쌍으로 저장된다.
+//		Claims claims = Jwts.claims().setSubject(users.getUserEmail()); // JWT payload 에 저장되는 정보단위, 보통 여기서 user를 식별하는 값을 넣는다.
+		Claims claims = Jwts.claims().setSubject(String.valueOf(users.getUserSeq())); // JWT payload 에 저장되는 정보단위, 보통 여기서 user를 식별하는 값을 넣는다.
+        claims.put("roles", users.getMatchUserRoles()); // 정보는 key / value 쌍으로 저장된다.
 
 		return Jwts.builder()
-			.setSubject(users.getUserEmail())
+//			.setSubject(users.getUserEmail())
+			.setSubject(String.valueOf(users.getUserSeq()))
 			.setHeader(createHeader())
-			.setClaims(createClaims(users))
+			.setClaims(claims)
 			.setExpiration(createExpireDate(Constants.REFRESH_TOKEN_VALID_TIME))
 			.signWith(SignatureAlgorithm.HS512, createSigningKey(Constants.REFRESH_KEY))
 			.compact();
@@ -108,27 +103,23 @@ public class TokenUtils {
         return request.getHeader("Authorization");
     }
 	
-	public String isValidToken(String token) {
+	public boolean isValidToken(String token) {
 		// TODO Auto-generated method stub
-		token = token.replace("Bearer ", "");
 		System.out.println("token :: " + token);
 		try {
 		  Claims accessClaims = getClaimsFormToken(token);
 		  System.out.println("accessClaims is : " + accessClaims);
 		  System.out.println("Access expireTime: " + accessClaims.getExpiration());
-		  System.out.println("Access email: " + accessClaims.get("sub"));
-//		  return !accessClaims.getExpiration().before(new Date());
-		  return "success";
+		  System.out.println("Access seq: " + accessClaims.get("sub"));
+		  return !accessClaims.getExpiration().before(new Date());
 		} catch (ExpiredJwtException exception) {
 		  System.out.println("Token Expired UserID : " + exception.getClaims().getSubject());
-		  return "expired";
 		} catch (JwtException exception) {
 		  System.out.println("Token Tampered");
-		  return "tampered";
 		} catch (NullPointerException exception) {
 		  System.out.println("Token is null");
-		  return "null";
 		}
+		return false;
 	}
 
 	public boolean isValidRefreshToken(String token) {
@@ -136,7 +127,7 @@ public class TokenUtils {
 	      Claims accessClaims = getClaimsToken(token);
 	      System.out.println("accessClaims is : " + accessClaims);
 	      System.out.println("refresh expireTime: " + accessClaims.getExpiration());
-	      System.out.println("refresh email: " + accessClaims.get("sub"));
+	      System.out.println("refresh seq: " + accessClaims.get("sub"));
 	      return true;
 	    } catch (ExpiredJwtException exception) {
 	      System.out.println("Token Expired UserID : " + exception.getClaims().getSubject());
@@ -173,14 +164,6 @@ public class TokenUtils {
 	    return new Date(curTime + expireDate);
 	}
 
-	private Map<String, Object> createClaims(Users users) {
-		// TODO Auto-generated method stub
-		Map<String, Object> claims = new HashMap<>();
-	    claims.put(Constants.DATA_KEY, users.getUserEmail());
-	    claims.put(Constants.AUTHORITIES_KEY, users.getRoles().getRoleName());
-	    return claims;
-	}
-
 	private Map<String, Object> createHeader() {
 		// TODO Auto-generated method stub
 		Map<String, Object> header = new HashMap<>();
@@ -192,7 +175,7 @@ public class TokenUtils {
 	    return header;
 	}
 	
-	Claims getClaimsFormToken(String token) {
+	public Claims getClaimsFormToken(String token) {
 		// TODO Auto-generated method stub
 		return Jwts.parser()
 		        .setSigningKey(DatatypeConverter.parseBase64Binary(Constants.SECRET_KEY))
@@ -208,14 +191,17 @@ public class TokenUtils {
 				.collect(Collectors.joining(","));
 		
 		String email = authentication.getName();
+		long userSeq = usersRepository.findByUserEmail(email).get().getUserSeq();
 		System.out.println("generateToken email :: " + email);
+		System.out.println("generateToken userSeq :: " + userSeq);
 
 		long now = (new Date()).getTime();
 		// Access Token 생성
 		Date accessTokenExpiresIn = createExpireDate(Constants.ACCESS_TOKEN_VALID_TIME);
 		Date refreshTokenExpiresIn = createExpireDate(Constants.REFRESH_TOKEN_VALID_TIME);
 		String accessToken = Jwts.builder()
-				.setSubject(authentication.getName())
+//				.setSubject(authentication.getName())
+				.setSubject(String.valueOf(userSeq))
 				.claim(Constants.AUTHORITIES_KEY, authorities)
 				.setExpiration(accessTokenExpiresIn)
 				.signWith(SignatureAlgorithm.HS512, createSigningKey(Constants.SECRET_KEY))
@@ -223,7 +209,8 @@ public class TokenUtils {
 
 		// Refresh Token 생성
 		String refreshToken = Jwts.builder()
-				.setSubject(authentication.getName())
+//				.setSubject(authentication.getName())
+				.setSubject(String.valueOf(userSeq))
 				.setExpiration(refreshTokenExpiresIn)
 				.signWith(SignatureAlgorithm.HS512, createSigningKey(Constants.REFRESH_KEY))
 				.compact();

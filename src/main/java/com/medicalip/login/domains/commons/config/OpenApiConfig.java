@@ -16,21 +16,21 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 public class OpenApiConfig {
 
 	  @Bean
-	  public OpenAPI openAPI(@Value("${springdoc.version}") String springdocVersion) {
+	  public OpenAPI openAPI() {
 		  	Info info = new Info()
 			        .title("Medicalip Login API")
-			        .version(springdocVersion)
 			        .description("Medicalip Login API");
+//
+//		    SecurityScheme securityScheme = new SecurityScheme()
+//		          	.type(SecurityScheme.Type.HTTP). scheme("Bearer").bearerFormat("JWT")
+//		          	.in(SecurityScheme.In.HEADER).name("Authorization");
 		    
-		    SecurityScheme securityScheme = new SecurityScheme()
-		          	.type(SecurityScheme.Type.HTTP). scheme("Bearer").bearerFormat("JWT")
-		          	.in(SecurityScheme.In.HEADER).name("Authorization");
-		    
-		    SecurityRequirement schemaRequirement = new SecurityRequirement().addList("bearerAuth");
+//		    SecurityRequirement schemaRequirement = new SecurityRequirement().addList("bearerAuth");
 		    
 		    return new OpenAPI()
-		        .components(new Components().addSecuritySchemes("bearerAuth", securityScheme))
-		        .security(Arrays.asList(schemaRequirement))
+		        .components(new Components())
+//						.addSecuritySchemes("bearerAuth", securityScheme))
+//		        .security(Arrays.asList(schemaRequirement))
 		        .info(info);
 	  }
 	

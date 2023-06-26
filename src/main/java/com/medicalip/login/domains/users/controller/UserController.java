@@ -1,99 +1,113 @@
 package com.medicalip.login.domains.users.controller;
 
-import java.util.Arrays;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.validation.constraints.NotBlank;
 
+import com.medicalip.login.domains.commons.advice.exception.ExistingUserException;
+import com.medicalip.login.domains.commons.advice.exception.RequestParameterException;
+import com.medicalip.login.domains.commons.advice.exception.UnauthorizedEmailException;
+import com.medicalip.login.domains.commons.advice.exception.UserExistsException;
+import com.medicalip.login.domains.commons.service.ResponseService;
+import com.medicalip.login.domains.redis.service.RedisService;
+import com.medicalip.login.domains.match.repo.MatchUserRoleRepository;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.medicalip.login.domains.commons.response.CommonResult;
 import com.medicalip.login.domains.commons.response.TokenResponse;
 import com.medicalip.login.domains.users.dto.LoginRequest;
 import com.medicalip.login.domains.users.dto.UserRequest;
-import com.medicalip.login.domains.users.dto.Users;
+import com.medicalip.login.domains.users.entity.Users;
 import com.medicalip.login.domains.users.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.servlet.view.RedirectView;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/user")
 @Tag(name = "1. Users", description = "Users Controller")
 public class UserController {
-	
 	private final UserService userService; // user Service
+	private final ResponseService responseService;
+	private final RedisService redisService;
+	private final MatchUserRoleRepository matchUserRoleRepository;
 
 	@GetMapping("/welcome")
 	public String welcome() {
-		return "login-service 호출!";
+		return "현재시간 :: " + LocalDateTime.now();
 	}
 
-	@PostMapping("/signup")
+	@PostMapping("/signUser")
 	@Operation(summary = "회원가입", description = "회원가입을 한다.")
 	public CommonResult signUp(
-//			@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(schema = @Schema(implementation = UserRequest.class))) 
-								@RequestBody UserRequest userRequest) {
-		CommonResult result = new CommonResult();
-		  result.setCode(400);
-		  result.setMsg("이미 가입된 회원입니다.");
-	  return userService.findByEmail(userRequest.getUserEmail()).isPresent()
-	      ? result
-	      : userService.signUp(userRequest);
+			@Parameter(name = "userRequest", schema = @Schema(required = true, example =
+					"{\n"
+					+ "\"nationCode\":\"\",\n"
+					+ "\"userEmail\":\"\",\n"
+					+ "\"userPw\":\"\",\n"
+					+ "\"userName\":\"\",\n"
+					+ "\"userNum\":\"\",\n"
+					+ "\"institude\":\"\",\n"
+					+ "\"isEducation\":\"\",\n"
+					+ "\"isSubscribe\":\"\"\n"
+					+ "}"))
+					@RequestBody UserRequest userRequest)
+	{
+		if (userRequest.getUserEmail().equals("") || userRequest.getUserPw().equals("")
+				|| userRequest.getNationCode().equals("") || userRequest.getUserName().equals("")) {
+			throw new RequestParameterException();
+		}
+
+		if(userRequest.getIsEducation() == null || userRequest.getIsEducation().equals(""))
+			userRequest.setIsEducation("N");
+
+		Optional<Users> users = userService.findByEmail(userRequest.getUserEmail());
+		if(users.isPresent()){
+			if(users.get().getEnabled().equals("N"))
+				throw new UnauthorizedEmailException();
+			if(users.get().getEnabled().equals("Y"))
+				throw new UserExistsException();
+		}
+
+		//회원가입
+		Users user = userService.signUp(userRequest);
+		log.info("user :: " + user);
+		//권한부여
+		userService.saveMatchUserRole(user);
+
+		//프로모션 등록
+		userService.newUserPromotion(userRequest);
+		return responseService.getSingleResult(user);
 	}
 	
-	@PostMapping("/signin")
+	@PostMapping("/signIn")
 	@Operation(summary = "로그인", description = "로그인을 한다.")
 	public ResponseEntity<?> signIn(@Parameter(name = "LoginRequest", schema = @Schema(required = true,example =
 			"{\"userEmail\":\"\",\n"
 			+"\"userPw\":\"\"\n"
 			+"}"))
-			@RequestBody LoginRequest.Login loginRequest, HttpServletRequest request,  HttpServletResponse response) {
+			@RequestBody LoginRequest.Login loginRequest, HttpServletRequest request, HttpSession session) {
 		loginRequest.setIp(request.getRemoteAddr());
 		
 		TokenResponse jwtToken;
-		System.out.println("request.getCookies() :: " + request.getCookies());
-		if(request.getCookies() != null) {
-			String refreshToken = "";
-			Cookie[] cookie =  request.getCookies();
-			
-			for(int i = 0; i < cookie.length ; i++) {
-				System.out.println("Cookie");
-				if(cookie[i].getName().equals("refreshToken")){
-					System.out.println("refreshToken not null");
-					refreshToken = cookie[i].getValue();
-				}
-			}
-			
-			System.out.println("refreshToken :: " + refreshToken);
-			if(refreshToken != null && !refreshToken.equals("")) {
-				//refreshToken 있으므로 accessToken 재발행
-				jwtToken = userService.signInByRefreshToken(loginRequest, refreshToken);
-				return ResponseEntity.ok().body(jwtToken);
-			}
-		}
-		
 		jwtToken = userService.signIn(loginRequest);
-		
-		//쿠키생성
-		Cookie refreshCookie = new Cookie("refreshToken", jwtToken.getRefreshToken());
-		refreshCookie.setMaxAge(365 * 24 * 60 * 60); //만료기간 1년
-		refreshCookie.setSecure(true);
-		refreshCookie.setHttpOnly(true);
-		refreshCookie.setPath("/");
-		
-		response.addCookie(refreshCookie);
+
+		//Session 등록
+		redisService.setRedis(jwtToken);
+
+//		session.setAttribute("sessionInfo", jwtToken);
 		return ResponseEntity.ok().body(jwtToken);
 		
 	}
@@ -102,16 +116,18 @@ public class UserController {
 	public ResponseEntity<List<Users>> findUser() {
 	  return ResponseEntity.ok().body(userService.findUsers());
 	}
-	
-//	@GetMapping("/chPass")
-//	public String chPass() {
-//		String pass = null;
-//		try {
-//			pass = EncryptUtil.sha512("1234");
-//		} catch (NoSuchAlgorithmException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		return pass;
-//	}
+
+	@Operation(summary = "이메일 중복체크", description = "입력한 이메일로 가입된 정보가 있는지 체크한다.")
+	@GetMapping(value = "/chkEmail")
+	public CommonResult chkEmail(
+			@RequestParam(name = "email", required = true) String email) {
+		int cnt = userService.findByEmail(email).stream().toArray().length;
+		log.debug("cnt :: " + cnt);
+		if(cnt == 0) {
+			return responseService.getSuccessResult();
+		}else {
+//			return responseService.getFailResult();
+			throw new ExistingUserException();
+		}
+	}
 }

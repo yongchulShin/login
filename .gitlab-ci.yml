@@ -1,0 +1,32 @@
+# 실행될 stage 지정 (위에서 아래로 차례대로 실행)
+stages:
+  - package
+
+# 변수 설정
+variables:
+  ECR_REPOSITORY_URL: 283680848817.dkr.ecr.ap-northeast-2.amazonaws.com
+  ECR_REPOSITORY_NAME: login 
+
+package:   # JOB 이름
+  # 사용될 이미지 설정
+  image: docker:latest
+  # stage 설정
+  stage: package
+  # service 설정 (설정한 image가 작업이 이루어지는 동안 실행되는 docker 이미지)
+  services:
+    - docker:dind
+  # script가 실행 전 수행 될 script
+  before_script:
+    - apk add --no-cache curl jq python3 py3-pip
+    - pip install awscli
+    - aws ecr get-login-password | docker login --username AWS --password-stdin 283680848817.dkr.ecr.ap-northeast-2.amazonaws.com
+  # 실행될 script 설정
+  script:
+    - docker build -t 283680848817.dkr.ecr.ap-northeast-2.amazonaws.com/login:latest .
+    - docker push 283680848817.dkr.ecr.ap-northeast-2.amazonaws.com/login:latest
+  # script가 실행된 후 수행 될 script
+  after_script:
+    - docker logout
+  # JOB이 수행될 branch 설정 (설정된 branch에 push가 발생될 시 JOB 수행)
+  only:
+    - main
