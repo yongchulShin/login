@@ -1,18 +1,9 @@
-# Login API
+# 🔐 Login API 서비스
 
-로그인 및 사용자 인증을 처리하는 REST API 서비스입니다. Spring Boot 기반으로 개발되었으며, Docker 컨테이너화를 지원합니다.
+본 저장소는 로그인 및 사용자 인증을 처리하는 REST API 서비스입니다.  
+Spring Boot와 Spring Security를 기반으로 개발되었으며, Docker 컨테이너화를 지원합니다.
 
-## 기술 스택
-
-- Java
-- Spring Boot
-- Spring Security
-- Spring Data JPA
-- Docker
-- GitLab CI/CD
-- Maven
-
-## 프로젝트 구조
+## 🧩 프로젝트 구성
 
 ```
 login/
@@ -28,76 +19,83 @@ login/
 └── pom.xml              # Maven 프로젝트 설정
 ```
 
-## 시작하기
+## 🛠 사용 기술
 
-### 필수 조건
+* Java 11+
+* Spring Boot
+* Spring Security
+* Spring Data JPA
+* Docker & Docker Compose
+* GitLab CI/CD
+* Maven 3.6+
 
-- JDK 11 이상
-- Maven 3.6 이상
-- Docker & Docker Compose (컨테이너 실행 시 필요)
+## 🚀 시작하기
 
-### 로컬 환경에서 실행
-
-1. 레포지토리 클론
+### 1. 로컬 환경에서 실행
 ```bash
+# 저장소 클론
 git clone https://github.com/yongchulShin/login.git
-```
-
-2. 프로젝트 디렉토리로 이동
-```bash
 cd login
-```
 
-3. 프로젝트 빌드
-```bash
+# 프로젝트 빌드
 ./mvnw clean install
-```
 
-4. 애플리케이션 실행
-```bash
+# 애플리케이션 실행
 ./mvnw spring-boot:run
 ```
 
-### Docker로 실행
-
-1. Docker 이미지 빌드
+### 2. Docker로 실행
 ```bash
+# Docker 이미지 빌드
 docker build -t login-api .
-```
 
-2. Docker Compose로 실행
-```bash
+# Docker Compose로 실행
 docker-compose up -d
 ```
 
-## API 문서
+## ⚡ 주요 기능
 
-API 문서는 Swagger UI를 통해 확인할 수 있습니다.
-- 로컬 환경: http://localhost:8080/swagger-ui.html
+* **사용자 관리**
+  - 회원가입
+  - 로그인/로그아웃
+  - 사용자 정보 관리
 
-## CI/CD
+* **인증/인가**
+  - JWT 기반 인증
+  - 권한 관리
+  - 토큰 갱신
 
-GitLab CI/CD 파이프라인이 구성되어 있으며, 다음과 같은 단계로 자동화되어 있습니다:
-- 빌드
-- 테스트
-- Docker 이미지 생성
-- 배포
+* **보안**
+  - 비밀번호 암호화
+  - CORS 설정
+  - XSS 방지
 
-## 주요 기능
+## 🔄 CI/CD
 
-- 사용자 회원가입
-- 로그인/로그아웃
-- JWT 기반 인증
-- 사용자 정보 관리
-- 권한 관리
+GitLab CI/CD 파이프라인이 구성되어 있으며, 다음 단계로 자동화되어 있습니다:
 
-## 개발 환경 설정
+* 빌드 및 테스트
+* Docker 이미지 생성
+* 품질 검사 (SonarQube)
+* 자동 배포
 
-프로젝트는 다음과 같은 프로파일을 지원합니다:
-- local: 로컬 개발 환경
-- dev: 개발 서버 환경
-- prod: 운영 서버 환경
+## 📋 API 문서
 
-## 라이선스
+API 문서는 Swagger UI를 통해 제공됩니다:
+```
+http://localhost:8080/swagger-ui.html
+```
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## ⚙️ 개발 환경
+
+프로젝트는 다음 프로파일을 지원합니다:
+* `local`: 로컬 개발 환경
+* `dev`: 개발 서버 환경
+* `prod`: 운영 서버 환경
+
+## 🙋‍♂️ About Me
+
+신용철 (Yongchul Shin)  
+전 서든어택 프로게이머 → 백엔드 개발자  
+GitHub: github.com/yongchulShin  
+Email: prozernim@gmail.com 
